@@ -66,7 +66,18 @@ FriendlyChat.prototype.initFirebase = function() {
 // Loads chat messages history and listens for upcoming ones.
 FriendlyChat.prototype.loadMessages = function() {
   // TODO(DEVELOPER): Load and listens for new messages.
+  // Reference to the /messages/ database path
+  this.messagesRef = this.database.ref('messages');
+  // Make sure we remove all previous listeners.
+  this.messagesRef.off();
 
+  // Loads the last 12 messages and listen for new ones.
+  var setMessage = function(data) {
+    var val = data.val();
+    this.displayMessage(data.key, val.name, val.text, valphotoUrl, val.imageUrl);
+  }.bind(this);
+  this.messagesRef.limitToLast(12).on('child_added', setMessage);
+  this.messagesRef.limitToLast(12).on('child_changed', setMessage);
 };
 
 // Saves a new message on the Firebase DB.
@@ -113,7 +124,7 @@ FriendlyChat.prototype.saveImageMessage = function(event) {
 };
 
 // Signs-in Friendly Chat.
-FriendlyChat.prototype.signIn = function(googleUser) {
+FriendlyChat.prototype.signIn = function() {
   // TODO(DEVELOPER): Sign in Firebase with credential from the Google user.
   // Sign in Firebase using popup auth and Google as the identity provider.
   var provider = new firebase.auth.GoogleAuthProvider();
@@ -131,7 +142,7 @@ FriendlyChat.prototype.signOut = function() {
 FriendlyChat.prototype.onAuthStateChanged = function(user) {
   if (user) { // User is signed in!
     // Get profile pic and user's name from the Firebase user object.
-    var profilePicUrl = user.photoUrl;   // TODO(DEVELOPER): Get profile pic.
+    var profilePicUrl = user.photoURL;   // TODO(DEVELOPER): Get profile pic.
     var userName = user.displayName;        // TODO(DEVELOPER): Get user's name.
 
     // Set the user's profile pic and name.
